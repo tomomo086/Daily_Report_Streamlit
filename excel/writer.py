@@ -171,7 +171,7 @@ if st.button("追加", key="add_security"):
     if new_security:
         if config.add_security_staff(new_security):
             st.success(f"'{new_security}' を追加しました。")
-            st.experimental_rerun()  # ここで再描画
+            st.experimental_rerun()  # これでフィールドが初期化される
         else:
             st.warning("既に登録されているか、無効な名前です。")
     else:
