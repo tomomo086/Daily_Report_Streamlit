@@ -138,7 +138,7 @@ class ExcelWriter:
             ('E36', other_times['morning_1post'], 'post1_lastname'),
             ('E38', other_times['morning_4post_2'], 'post4_lastname')
         ]:
-            self._set_time(ws, cell, time)
+            self._safe_set_cell_value(ws, cell, time.lstrip("0"))
             name_cell = cell.replace('E', 'G')
             self._safe_set_cell_value(ws, name_cell, 
                                     getattr(patrol_data, name_attr))
