@@ -219,17 +219,17 @@ class PatrolTimeGenerator:
         """その他の時間を生成"""
         return {
             'morning_4post': (datetime.strptime("7:00", "%H:%M") + 
-                            timedelta(minutes=random.randint(0, 20))).strftime("%H:%M"),
+                            timedelta(minutes=random.randint(0, 20))).strftime("%H:%M").lstrip("0"),
             'morning_5post': (datetime.strptime("7:15", "%H:%M") + 
-                            timedelta(minutes=random.randint(0, 15))).strftime("%H:%M"),
+                            timedelta(minutes=random.randint(0, 15))).strftime("%H:%M").lstrip("0"),
             'morning_1post': (datetime.strptime("8:48", "%H:%M") + 
-                            timedelta(minutes=random.randint(0, 8))).strftime("%H:%M"),
+                            timedelta(minutes=random.randint(0, 8))).strftime("%H:%M").lstrip("0"),
             'morning_4post_2': (datetime.strptime("7:30", "%H:%M") + 
-                              timedelta(minutes=random.randint(0, 20))).strftime("%H:%M"),
+                              timedelta(minutes=random.randint(0, 20))).strftime("%H:%M").lstrip("0"),
             'night_4post': (datetime.strptime("22:00", "%H:%M") + 
-                          timedelta(minutes=random.randint(0, 10))).strftime("%H:%M"),
+                          timedelta(minutes=random.randint(0, 10))).strftime("%H:%M").lstrip("0"),
             'patrol_4post': (datetime.strptime("21:30", "%H:%M") + 
-                           timedelta(minutes=random.randint(0, 3))).strftime("%H:%M"),
+                           timedelta(minutes=random.randint(0, 3))).strftime("%H:%M").lstrip("0"),
             'patrol_4post_end': (datetime.strptime("22:50", "%H:%M") + 
-                               timedelta(minutes=random.randint(0, 5))).strftime("%H:%M")
+                               timedelta(minutes=random.randint(0, 5))).strftime("%H:%M").lstrip("0")
         }
