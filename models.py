@@ -12,6 +12,7 @@ class PatrolData:
     large_theater_used: bool
     medium_theater_used: bool
     small_theater_used: bool
+    weather: str  # 天気を追加
     
     @property
     def post4_lastname(self):

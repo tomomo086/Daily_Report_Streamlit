@@ -164,6 +164,8 @@ class ExcelWriter:
                     st.write(f"フォント設定エラー (セル {cell}): {font_error}")
 
 # 追加ボタンが押されたら、rerun で初期値に戻す
+st.session_state.new_security = ""
+st.session_state.new_facility = ""
 new_security = st.text_input("新しい警備担当者を追加", key="new_security")
 if st.button("追加", key="add_security"):
     if new_security:

@@ -39,8 +39,16 @@ def main():
             post1 = st.selectbox("1ポスト担当", post1_options, key="post1")
             
             supervisor_options = [""] + config.facility_staff_list
-            supervisor = st.selectbox("責任者・巡回担当", supervisor_options, key="supervisor")
-            
+            supervisor = st.selectbox("設備担当者", supervisor_options, key="supervisor")
+
+            # 天気入力欄
+            st.subheader("天気")
+            weather_options = ["晴", "曇", "雨", "晴/曇", "曇/雨", "その他"]
+            weather_select = st.selectbox("天気を選択", weather_options, key="weather_select")
+            weather = st.text_input("天気を自由入力（上の選択肢以外の場合）", "" if weather_select != "その他" else "", key="weather_input")
+            if weather_select != "その他":
+                weather = weather_select
+
             st.subheader("巡回設定")
             patrol_start = st.selectbox(
                 "巡回開始時刻", 
@@ -93,7 +101,8 @@ def main():
                             patrol_start=patrol_start,
                             large_theater_used=large_theater,
                             medium_theater_used=medium_theater,
-                            small_theater_used=small_theater
+                            small_theater_used=small_theater,
+                            weather=weather
                         )
                         
                         writer = ExcelWriter()
