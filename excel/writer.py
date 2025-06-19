@@ -162,3 +162,6 @@ class ExcelWriter:
                     ws_item[cell].font = Font(size=8)
                 except Exception as font_error:
                     st.write(f"フォント設定エラー (セル {cell}): {font_error}")
+
+st.session_state.new_security = ""
+st.session_state.new_facility = ""
