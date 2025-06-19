@@ -60,6 +60,13 @@ def main():
                 ["21:00頃", "22:00頃"], 
                 key="patrol_start"
             )
+
+            st.subheader("勤務区分")
+            work_type = st.selectbox(
+                "勤務区分を選択",
+                ["通常", "早出", "残業"],
+                key="work_type"
+            )
         
         with col2:
             st.subheader("劇場使用状況")
@@ -107,7 +114,8 @@ def main():
                             large_theater_used=large_theater,
                             medium_theater_used=medium_theater,
                             small_theater_used=small_theater,
-                            weather=weather
+                            weather=weather,
+                            work_type=work_type
                         )
                         
                         writer = ExcelWriter()
