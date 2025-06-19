@@ -92,8 +92,8 @@ class ExcelWriter:
             self._safe_set_cell_value(ws, 'L4', '7:30～23:00')
             self._set_time(ws, 'C10', '7:30')
             self._set_time(ws, 'D10', '7:30')
-            self._safe_set_cell_value(ws, 'E10', '4ポスト')
-            self._safe_set_cell_value(ws, 'F10', '4ポスト')
+            self._safe_set_cell_value(ws, 'E10', patrol_data.post4)
+            self._safe_set_cell_value(ws, 'F10', patrol_data.post4)
             self._set_time(ws, 'C11', '23:00')
             self._safe_set_cell_value(ws, 'E11', patrol_data.post4)
         elif getattr(patrol_data, 'work_type', '通常') == '残業':
