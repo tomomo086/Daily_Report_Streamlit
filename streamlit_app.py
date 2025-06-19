@@ -45,9 +45,14 @@ def main():
             st.subheader("天気")
             weather_options = ["晴", "曇", "雨", "晴/曇", "曇/雨", "その他"]
             weather_select = st.selectbox("天気を選択", weather_options, key="weather_select")
-            weather = st.text_input("天気を自由入力（上の選択肢以外の場合）", "" if weather_select != "その他" else "", key="weather_input")
-            if weather_select != "その他":
+            weather = ""
+            if weather_select == "その他":
+                weather = st.text_input("天気を自由入力（上の選択肢以外の場合）", key="weather_input")
+            else:
                 weather = weather_select
+            # 空の場合はデフォルト値
+            if not weather:
+                weather = "未記入"
 
             st.subheader("巡回設定")
             patrol_start = st.selectbox(
