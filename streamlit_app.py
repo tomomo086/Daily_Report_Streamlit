@@ -130,8 +130,7 @@ def main():
                 if new_security:
                     if config.add_security_staff(new_security):
                         st.success(f"'{new_security}' を追加しました。")
-                        # 入力フィールドをクリア
-                        st.session_state.new_security = ""
+                        st.rerun()  # リフレッシュして入力をクリア
                     else:
                         st.warning("既に登録されているか、無効な名前です。")
                 else:
@@ -156,8 +155,7 @@ def main():
                 if new_facility:
                     if config.add_facility_staff(new_facility):
                         st.success(f"'{new_facility}' を追加しました。")
-                        # 入力フィールドをクリア
-                        st.session_state.new_facility = ""
+                        st.rerun()  # リフレッシュして入力をクリア
                     else:
                         st.warning("既に登録されているか、無効な名前です。")
                 else:
