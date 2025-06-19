@@ -64,12 +64,13 @@ class ExcelWriter:
         if time_str:
             try:
                 if isinstance(time_str, str):
-                    time_obj = datetime.strptime(time_str, "%H:%M")
+                    # time型で格納
+                    time_obj = datetime.strptime(time_str, "%H:%M").time()
                 else:
                     time_obj = time_str
                 self._safe_set_cell_value(ws, cell, time_obj)
                 try:
-                    ws[cell].number_format = 'H:MM'
+                    ws[cell].number_format = 'hh:mm'
                 except Exception as format_error:
                     st.write(f"時間フォーマット設定エラー: {format_error}")
             except ValueError as time_error:
