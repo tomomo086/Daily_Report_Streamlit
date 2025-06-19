@@ -66,18 +66,11 @@ class ExcelWriter:
                 if isinstance(time_str, str):
                     # 0埋め除去
                     time_str = time_str.lstrip("0") if time_str != "-" else time_str
-                    time_obj = datetime.strptime(time_str, "%H:%M").time() if time_str != "-" else "-"
+                    # 文字列として書き込む
+                    self._safe_set_cell_value(ws, cell, time_str)
                 else:
-                    time_obj = time_str
-                if time_obj != "-":
-                    self._safe_set_cell_value(ws, cell, time_obj)
-                    try:
-                        ws[cell].number_format = 'hh:mm'
-                    except Exception as format_error:
-                        st.write(f"時間フォーマット設定エラー: {format_error}")
-                else:
-                    self._safe_set_cell_value(ws, cell, "-")
-            except ValueError as time_error:
+                    self._safe_set_cell_value(ws, cell, str(time_str).lstrip("0"))
+            except Exception as time_error:
                 self._safe_set_cell_value(ws, cell, time_str)
     
     def _write_basic_info(self, ws, patrol_data: PatrolData):
