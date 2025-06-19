@@ -77,6 +77,7 @@ class ExcelWriter:
     
     def _write_basic_info(self, ws, patrol_data: PatrolData):
         """基本情報を書き込む"""
+        self._safe_set_cell_value(ws, 'I4', patrol_data.weather)
         self._safe_set_cell_value(ws, 'F6', patrol_data.post4)
         self._safe_set_cell_value(ws, 'F7', patrol_data.post5)
         # 設備担当者は登録された通りに出力（そのまま）
