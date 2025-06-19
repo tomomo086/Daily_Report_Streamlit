@@ -185,7 +185,7 @@ class ExcelWriter:
         
         self._set_time(ws, 'E41', other_times['patrol_4post'])
         self._safe_set_cell_value(ws, 'G41', patrol_data.post4_lastname)
-        self._safe_set_cell_value(ws, 'F41', "22:50")
+        self._safe_set_cell_value(ws, 'F41', "23:50")
         
         self._set_time(ws, 'H41', other_times['patrol_4post_end'])
         self._safe_set_cell_value(ws, 'J41', patrol_data.post4_lastname)
