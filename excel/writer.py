@@ -60,19 +60,23 @@ class ExcelWriter:
                 st.error(f"フォールバック処理でもエラー: {fallback_error}")
     
     def _set_time(self, ws, cell, time_str):
-        """時間をセルに設定"""
+        """時間をセルに設定（0埋め除去対応）"""
         if time_str:
             try:
                 if isinstance(time_str, str):
-                    # time型で格納
-                    time_obj = datetime.strptime(time_str, "%H:%M").time()
+                    # 0埋め除去
+                    time_str = time_str.lstrip("0") if time_str != "-" else time_str
+                    time_obj = datetime.strptime(time_str, "%H:%M").time() if time_str != "-" else "-"
                 else:
                     time_obj = time_str
-                self._safe_set_cell_value(ws, cell, time_obj)
-                try:
-                    ws[cell].number_format = 'hh:mm'
-                except Exception as format_error:
-                    st.write(f"時間フォーマット設定エラー: {format_error}")
+                if time_obj != "-":
+                    self._safe_set_cell_value(ws, cell, time_obj)
+                    try:
+                        ws[cell].number_format = 'hh:mm'
+                    except Exception as format_error:
+                        st.write(f"時間フォーマット設定エラー: {format_error}")
+                else:
+                    self._safe_set_cell_value(ws, cell, "-")
             except ValueError as time_error:
                 self._safe_set_cell_value(ws, cell, time_str)
     
@@ -91,8 +95,8 @@ class ExcelWriter:
             self._safe_set_cell_value(ws, 'K4', '7:30～23:00')
             self._safe_set_cell_value(ws, 'L4', '7:30～23:00')
             # C10, D10は0埋めなしの文字列で書き込む
-            self._safe_set_cell_value(ws, 'C10', '7:30')
-            self._safe_set_cell_value(ws, 'D10', '7:30')
+            self._set_time(ws, 'C10', '7:30')
+            self._set_time(ws, 'D10', '7:30')
             self._safe_set_cell_value(ws, 'E10', patrol_data.post4)
             self._safe_set_cell_value(ws, 'F10', patrol_data.post4)
             self._set_time(ws, 'C11', '23:00')
@@ -101,8 +105,9 @@ class ExcelWriter:
             # 残業
             self._safe_set_cell_value(ws, 'K4', '8:00～24:00')
             self._safe_set_cell_value(ws, 'L4', '8:00～24:00')
-            # C10は従来通り（例として）
+            # C10, D10は0埋めなしの文字列で書き込む
             self._set_time(ws, 'C10', '8:00')
+            self._set_time(ws, 'D10', '8:00')
             self._safe_set_cell_value(ws, 'E10', patrol_data.post1)
             self._set_time(ws, 'C11', '24:00')
             self._set_time(ws, 'D11', '24:00')
@@ -110,6 +115,7 @@ class ExcelWriter:
         else:
             # 通常
             self._set_time(ws, 'C10', '8:00')
+            self._set_time(ws, 'D10', '8:00')
             self._safe_set_cell_value(ws, 'E10', patrol_data.post1)
             self._set_time(ws, 'C11', '23:00')
             self._safe_set_cell_value(ws, 'E11', patrol_data.post4)
@@ -167,14 +173,15 @@ class ExcelWriter:
             self._safe_set_cell_value(ws, name_cell, 
                                     getattr(patrol_data, name_attr))
         
-        # 夜の記録
-        self._set_time(ws, 'H34', "22:50")
-        self._safe_set_cell_value(ws, 'J34', patrol_data.post5_lastname)
+        # 夜の記録（1時間スライド対応）
+        self._set_time(ws, 'H34', "23:50")
+        self._safe_set_cell_value(ws, 'I34', patrol_data.post5_lastname)
         
         self._set_time(ws, 'H38', other_times['night_4post'])
         self._safe_set_cell_value(ws, 'J38', patrol_data.post4_lastname)
         
         self._set_time(ws, 'E41', other_times['patrol_4post'])
+        self._set_time(ws, 'F41', other_times['patrol_4post'])
         self._safe_set_cell_value(ws, 'G41', patrol_data.post4_lastname)
         
         self._set_time(ws, 'H41', other_times['patrol_4post_end'])
