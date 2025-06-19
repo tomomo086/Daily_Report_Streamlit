@@ -163,5 +163,14 @@ class ExcelWriter:
                 except Exception as font_error:
                     st.write(f"フォント設定エラー (セル {cell}): {font_error}")
 
-st.session_state.new_security = ""
-st.session_state.new_facility = ""
+# 追加ボタンが押されたら、rerun で初期値に戻す
+new_security = st.text_input("新しい警備担当者を追加", key="new_security")
+if st.button("追加", key="add_security"):
+    if new_security:
+        if config.add_security_staff(new_security):
+            st.success(f"'{new_security}' を追加しました。")
+            st.experimental_rerun()  # ここで再描画
+        else:
+            st.warning("既に登録されているか、無効な名前です。")
+    else:
+        st.warning("名前を入力してください。")
