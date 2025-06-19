@@ -90,8 +90,9 @@ class ExcelWriter:
             # 早出
             self._safe_set_cell_value(ws, 'K4', '7:30～23:00')
             self._safe_set_cell_value(ws, 'L4', '7:30～23:00')
-            self._set_time(ws, 'C10', '7:30')
-            self._set_time(ws, 'D10', '7:30')
+            # C10, D10は0埋めなしの文字列で書き込む
+            self._safe_set_cell_value(ws, 'C10', '7:30')
+            self._safe_set_cell_value(ws, 'D10', '7:30')
             self._safe_set_cell_value(ws, 'E10', patrol_data.post4)
             self._safe_set_cell_value(ws, 'F10', patrol_data.post4)
             self._set_time(ws, 'C11', '23:00')
@@ -100,6 +101,7 @@ class ExcelWriter:
             # 残業
             self._safe_set_cell_value(ws, 'K4', '8:00～24:00')
             self._safe_set_cell_value(ws, 'L4', '8:00～24:00')
+            # C10は従来通り（例として）
             self._set_time(ws, 'C10', '8:00')
             self._safe_set_cell_value(ws, 'E10', patrol_data.post1)
             self._set_time(ws, 'C11', '24:00')
