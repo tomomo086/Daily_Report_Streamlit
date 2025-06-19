@@ -57,7 +57,7 @@ def main():
             st.subheader("巡回設定")
             patrol_start = st.selectbox(
                 "巡回開始時刻", 
-                ["21:00頃", "22:00頃", "23:00頃"],
+                ["21:00頃", "22:00頃"], 
                 key="patrol_start"
             )
 
