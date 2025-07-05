@@ -3,6 +3,7 @@ from datetime import datetime
 from models import PatrolData
 from config import Config
 from excel.writer import ExcelWriter
+from excel.cell_definitions import CellDefinitionManager
 
 def main():
     st.set_page_config(
@@ -17,7 +18,11 @@ def main():
     if 'config' not in st.session_state:
         st.session_state.config = Config()
     
+    if 'cell_manager' not in st.session_state:
+        st.session_state.cell_manager = CellDefinitionManager()
+    
     config = st.session_state.config
+    cell_manager = st.session_state.cell_manager
     
     tab1, tab2 = st.tabs(["📝 日報作成", "👥 スタッフ管理"])
     
@@ -74,30 +79,38 @@ def main():
             medium_theater = st.checkbox("中劇場（楽屋）使用", key="medium_theater")
             small_theater = st.checkbox("小劇場使用", key="small_theater")
             
-            st.subheader("Excelファイル")
-            uploaded_file = st.file_uploader(
-                "日報テンプレートファイルをアップロード",
-                type=['xlsx'],
-                help="日報のテンプレートExcelファイルを選択してください（最大10MB）"
-            )
+            st.subheader("セル位置情報")
             
-            # ファイル検証
-            if uploaded_file is not None:
-                # ファイルサイズチェック（10MB制限）
-                if uploaded_file.size > 10 * 1024 * 1024:
-                    st.error("ファイルサイズが大きすぎます。10MB以下のファイルを選択してください。")
-                    st.stop()  # 処理を停止
-                else:
-                    st.success(f"ファイル '{uploaded_file.name}' が正常にアップロードされました")
-                    st.info(f"ファイルサイズ: {uploaded_file.size / 1024:.1f} KB")
+            # 今日の日付を表示
+            today = datetime.today()
+            st.info(f"📅 日付: {today.strftime('%Y年%m月%d日')} （自動入力）")
+            
+            # セル位置表示
+            st.markdown("**📋 入力項目とセル位置:**")
+            user_cells = cell_manager.get_user_input_cells()
+            
+            with st.expander("セル位置詳細", expanded=False):
+                for cell in user_cells:
+                    st.markdown(f"- **{cell.label}** → セル `{cell.cell_address}`")
+                    if cell.description:
+                        st.text(f"  {cell.description}")
+            
+            # 自動生成項目の表示
+            st.markdown("**🤖 自動生成項目:**")
+            auto_cells = cell_manager.get_auto_generate_cells()
+            st.info(f"合計 {len(auto_cells)} 項目が自動生成されます")
+            
+            with st.expander("自動生成項目詳細", expanded=False):
+                for cell in auto_cells:
+                    st.markdown(f"- **{cell.label}** → セル `{cell.cell_address}`")
+                    if cell.description:
+                        st.text(f"  {cell.description}")
         
         st.markdown("---")
         
         if st.button("📋 日報作成", type="primary", use_container_width=True):
             if not all([post4, post5, post1, supervisor]):
                 st.error("すべての担当者を選択してください。")
-            elif not uploaded_file:
-                st.error("Excelファイルをアップロードしてください。")
             else:
                 # 担当者の重複チェック
                 staff_list = [post4, post5, post1, supervisor]
@@ -119,10 +132,9 @@ def main():
                         )
                         
                         writer = ExcelWriter()
-                        file_bytes = uploaded_file.read()
                         
                         with st.spinner("日報を作成中..."):
-                            output_bytes = writer.write_report(file_bytes, patrol_data)
+                            output_bytes = writer.write_report(patrol_data)
                         
                         today = datetime.today()
                         filename = f"日報_{today.strftime('%Y%m%d')}.xlsx"

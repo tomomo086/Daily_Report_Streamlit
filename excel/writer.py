@@ -1,27 +1,33 @@
-from openpyxl import load_workbook
-from openpyxl.styles import Font
+from openpyxl import Workbook
+from openpyxl.styles import Font, Border, Side, PatternFill, Alignment
 from datetime import datetime
 import io
 import streamlit as st
 from models import PatrolData
 from utils.time_utils import PatrolTimeGenerator
+from .cell_definitions import CellDefinitionManager
 
 class ExcelWriter:
     def __init__(self):
         self.time_generator = PatrolTimeGenerator()
+        self.cell_manager = CellDefinitionManager()
     
-    def write_report(self, file_bytes, patrol_data: PatrolData):
-        """日報をExcelファイルに書き込む"""
-        wb = load_workbook(io.BytesIO(file_bytes))
+    def write_report(self, patrol_data: PatrolData):
+        """日報をExcelファイルに書き込む（テンプレート不要）"""
+        wb = Workbook()
         
         # シート名の取得
         today = datetime.today()
         sheet_name = f"{today.month}.{today.day}"
         
-        if sheet_name not in wb.sheetnames:
-            raise ValueError(f"シート {sheet_name} が見つかりません。")
+        ws = wb.active
+        ws.title = sheet_name
         
-        ws = wb[sheet_name]
+        # 日報テンプレートの基本構造を作成
+        self._create_template_structure(ws)
+        
+        # 日付を自動入力
+        self._write_date(ws, today)
         
         # 基本情報の書き込み
         self._write_basic_info(ws, patrol_data)
@@ -40,6 +46,61 @@ class ExcelWriter:
         wb.save(output)
         output.seek(0)
         return output.getvalue()
+    
+    def _create_template_structure(self, ws):
+        """日報テンプレートの基本構造を作成"""
+        # タイトル
+        ws['A1'] = '日報'
+        ws['A1'].font = Font(size=16, bold=True)
+        
+        # 日付欄
+        ws['A2'] = '日付:'
+        ws['B2'] = ''  # 日付が入る場所
+        
+        # 基本情報のヘッダー
+        ws['A4'] = '天気'
+        ws['I4'] = ''  # 天気が入る場所
+        
+        # 担当者情報
+        ws['A6'] = '4ポスト担当'
+        ws['F6'] = ''  # 4ポスト担当者が入る場所
+        ws['A7'] = '5ポスト担当'  
+        ws['F7'] = ''  # 5ポスト担当者が入る場所
+        
+        # 設備担当者
+        ws['A5'] = '設備担当者'
+        ws['J5'] = ''  # 設備担当者が入る場所
+        ws['J6'] = ''  # 設備担当者が入る場所（2箇所目）
+        
+        # 勤務時間
+        ws['A10'] = '勤務時間'
+        ws['K4'] = ''  # 勤務時間1
+        ws['L4'] = ''  # 勤務時間2
+        
+        # 巡回記録のヘッダー
+        ws['A15'] = '巡回記録'
+        ws['A17'] = '4ポスト巡回'
+        ws['A26'] = '5ポスト巡回'
+        ws['A32'] = 'その他時間記録'
+        
+        # セルの基本スタイル設定
+        self._apply_basic_styling(ws)
+    
+    def _write_date(self, ws, today):
+        """日付を自動入力"""
+        date_str = today.strftime('%Y年%m月%d日')
+        ws['B2'] = date_str
+        ws['B2'].font = Font(size=12)
+    
+    def _apply_basic_styling(self, ws):
+        """基本的なスタイリングを適用"""
+        # ヘッダー行のスタイル
+        header_font = Font(bold=True, size=10)
+        for row in [1, 4, 6, 7, 15, 17, 26, 32]:
+            for col in range(1, 15):
+                cell = ws.cell(row=row, column=col)
+                if cell.value:
+                    cell.font = header_font
     
     def _safe_set_cell_value(self, ws, cell_address, value):
         """結合セルかどうかをチェックしてから値を設定"""
@@ -75,6 +136,7 @@ class ExcelWriter:
     
     def _write_basic_info(self, ws, patrol_data: PatrolData):
         """基本情報を書き込む"""
+        # セル定義管理を使用して安全に書き込み
         self._safe_set_cell_value(ws, 'I4', patrol_data.weather)
         self._safe_set_cell_value(ws, 'F6', patrol_data.post4)
         self._safe_set_cell_value(ws, 'F7', patrol_data.post5)
@@ -192,16 +254,3 @@ class ExcelWriter:
                 except Exception as font_error:
                     st.write(f"フォント設定エラー (セル {cell}): {font_error}")
 
-# 追加ボタンが押されたら、rerun で初期値に戻す
-st.session_state.new_security = ""
-st.session_state.new_facility = ""
-new_security = st.text_input("新しい警備担当者を追加", key="new_security")
-if st.button("追加", key="add_security"):
-    if new_security:
-        if config.add_security_staff(new_security):
-            st.success(f"'{new_security}' を追加しました。")
-            st.experimental_rerun()  # これでフィールドが初期化される
-        else:
-            st.warning("既に登録されているか、無効な名前です。")
-    else:
-        st.warning("名前を入力してください。")
