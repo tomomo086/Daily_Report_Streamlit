@@ -3,6 +3,8 @@ from datetime import datetime
 from models import PatrolData
 from config import Config
 from excel.writer import ExcelWriter
+from utils.privacy_utils import PrivacyFileHandler, get_anonymous_download_name, clear_browser_cache_headers
+from utils.security_tips import show_privacy_tips, show_security_warning, show_cleanup_instructions
 
 def main():
     st.set_page_config(
@@ -13,6 +15,9 @@ def main():
     
     st.title("📋 日報作成ツール")
     st.markdown("---")
+    
+    # プライバシー保護のTipsを表示
+    show_privacy_tips()
     
     if 'config' not in st.session_state:
         st.session_state.config = Config()
@@ -88,8 +93,11 @@ def main():
                     st.error("ファイルサイズが大きすぎます。10MB以下のファイルを選択してください。")
                     st.stop()  # 処理を停止
                 else:
-                    st.success(f"ファイル '{uploaded_file.name}' が正常にアップロードされました")
+                    # プライバシー保護のため、ファイル名を匿名化して表示
+                    anonymous_name = get_anonymous_download_name(uploaded_file.name)
+                    st.success(f"ファイルが正常にアップロードされました")
                     st.info(f"ファイルサイズ: {uploaded_file.size / 1024:.1f} KB")
+                    st.info("🔒 プライバシー保護のため、ファイル名は匿名化されています")
         
         st.markdown("---")
         
@@ -118,23 +126,33 @@ def main():
                             work_type=work_type
                         )
                         
-                        writer = ExcelWriter()
-                        file_bytes = uploaded_file.read()
-                        
-                        with st.spinner("日報を作成中..."):
-                            output_bytes = writer.write_report(file_bytes, patrol_data)
-                        
-                        today = datetime.today()
-                        filename = f"日報_{today.strftime('%Y%m%d')}.xlsx"
-                        
-                        st.success("日報が正常に作成されました！")
-                        st.download_button(
-                            label="📥 日報をダウンロード",
-                            data=output_bytes,
-                            file_name=filename,
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                            type="primary"
-                        )
+                        # プライバシー保護のファイル処理
+                        with PrivacyFileHandler() as privacy_handler:
+                            writer = ExcelWriter()
+                            file_bytes = uploaded_file.read()
+                            
+                            with st.spinner("日報を作成中..."):
+                                output_bytes = writer.write_report(file_bytes, patrol_data)
+                            
+                            # 匿名化されたファイル名を生成
+                            anonymous_filename = get_anonymous_download_name()
+                            
+                            st.success("日報が正常に作成されました！")
+                            st.info("🔒 プライバシー保護のため、ファイル名は匿名化されています")
+                            st.warning("⚠️ ダウンロード後は、ブラウザの履歴とダウンロード履歴をクリアすることをお勧めします")
+                            
+                            # キャッシュ防止ヘッダーと共にダウンロードボタンを表示
+                            st.download_button(
+                                label="📥 日報をダウンロード (匿名)",
+                                data=output_bytes,
+                                file_name=anonymous_filename,
+                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                type="primary",
+                                help="クリック後、ブラウザの履歴をクリアしてプライバシーを保護してください"
+                            )
+                            
+                            # クリーンアップ手順を表示
+                            show_cleanup_instructions()
                         
                     except Exception as e:
                         st.error(f"エラーが発生しました: {e}")
