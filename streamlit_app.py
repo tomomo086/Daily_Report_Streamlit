@@ -140,13 +140,72 @@ def main():
                         filename = f"日報_{today.strftime('%Y%m%d')}.xlsx"
                         
                         st.success("日報が正常に作成されました！")
-                        st.download_button(
-                            label="📥 日報をダウンロード",
-                            data=output_bytes,
-                            file_name=filename,
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                            type="primary"
-                        )
+                        
+                        # ExcelファイルをWEB上で表示
+                        st.subheader("📊 生成された日報")
+                        
+                        # 日報内容を表示ボタン
+                        if st.button("📋 日報内容を表示", type="primary", use_container_width=True):
+                            st.session_state.show_excel_content = True
+                        
+                        # Excelファイルの内容を表示
+                        if st.session_state.get('show_excel_content', False):
+                            st.markdown("---")
+                            st.subheader("📋 日報内容")
+                            
+                            # Excelファイルの内容を読み込んで表示
+                            import pandas as pd
+                            from io import BytesIO
+                            
+                            try:
+                                # Excelファイルを読み込み
+                                excel_data = BytesIO(output_bytes)
+                                
+                                # シート名を取得
+                                xl = pd.ExcelFile(excel_data)
+                                sheet_name = xl.sheet_names[0]
+                                
+                                # データを読み込み
+                                df = pd.read_excel(excel_data, sheet_name=sheet_name, header=None)
+                                
+                                # 空の行と列を削除
+                                df = df.dropna(how='all').dropna(axis=1, how='all')
+                                
+                                # 日報内容を表示（より見やすく）
+                                st.markdown("**📊 Excelファイルの内容:**")
+                                
+                                # データフレームを表示
+                                st.dataframe(
+                                    df,
+                                    use_container_width=True,
+                                    hide_index=True,
+                                    column_config={
+                                        "0": st.column_config.TextColumn("A", width="small"),
+                                        "1": st.column_config.TextColumn("B", width="medium"),
+                                        "2": st.column_config.TextColumn("C", width="small"),
+                                        "3": st.column_config.TextColumn("D", width="small"),
+                                        "4": st.column_config.TextColumn("E", width="small"),
+                                        "5": st.column_config.TextColumn("F", width="medium"),
+                                        "6": st.column_config.TextColumn("G", width="medium"),
+                                        "7": st.column_config.TextColumn("H", width="small"),
+                                        "8": st.column_config.TextColumn("I", width="small"),
+                                        "9": st.column_config.TextColumn("J", width="medium"),
+                                        "10": st.column_config.TextColumn("K", width="medium"),
+                                        "11": st.column_config.TextColumn("L", width="medium"),
+                                    }
+                                )
+                                
+                                # ファイル情報を表示
+                                st.info(f"📄 ファイル名: {filename} | 📅 シート名: {sheet_name}")
+                                
+                                # 非表示ボタン
+                                if st.button("📋 内容を非表示", type="secondary"):
+                                    st.session_state.show_excel_content = False
+                                    st.rerun()
+                                    
+                            except Exception as e:
+                                st.error(f"Excelファイルの表示中にエラーが発生しました: {e}")
+                                st.info("ダウンロードしたファイルをご確認ください。")
                         
                     except Exception as e:
                         st.error(f"エラーが発生しました: {e}")
