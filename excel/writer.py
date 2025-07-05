@@ -166,9 +166,9 @@ class ExcelWriter:
         
         # 夜の記録
         if getattr(patrol_data, 'work_type', '通常') == '残業':
-            # 残業の場合はH34とI34に22:50を入力
-            self._set_time(ws, 'H34', "22:50")
-            self._safe_set_cell_value(ws, 'I34', "22:50")
+            # 残業の場合はH34とI34に23:50を入力
+            self._set_time(ws, 'H34', "23:50")
+            self._safe_set_cell_value(ws, 'I34', "23:50")
         else:
             self._set_time(ws, 'H34', "22:50")
         self._safe_set_cell_value(ws, 'J34', patrol_data.post5_lastname)
