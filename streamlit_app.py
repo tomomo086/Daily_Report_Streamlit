@@ -26,7 +26,7 @@ def main():
     config = st.session_state.config
     cell_manager = st.session_state.cell_manager
     
-    tab1, tab2 = st.tabs(["📝 日報作成", "👥 スタッフ管理"])
+    tab1, tab2, tab3 = st.tabs(["📝 日報作成", "📤 アップロード", "👥 スタッフ管理"])
     
     with tab1:
         st.header("日報作成")
@@ -139,15 +139,30 @@ def main():
                             output_bytes = writer.write_report(patrol_data)
                         
                         today = datetime.today()
-                        filename = f"日報_{today.strftime('%Y%m%d')}.xlsx"
+                        import random
+                        import string
+                        
+                        # ランダムな文字列を生成（8文字）
+                        random_chars = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+                        filename = f"{random_chars}.xlsx"
                         
                         st.success("日報が正常に作成されました！")
+                        
+                        # ダウンロードボタンを追加
+                        st.download_button(
+                            label="📥 日報をダウンロード",
+                            data=output_bytes,
+                            file_name=filename,
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            type="primary",
+                            use_container_width=True
+                        )
                         
                         # ExcelファイルをWEB上で表示
                         st.subheader("📊 生成された日報")
                         
                         # 日報内容を表示ボタン
-                        if st.button("📋 日報内容を表示", type="primary", use_container_width=True):
+                        if st.button("📋 日報内容を表示", type="secondary", use_container_width=True):
                             st.session_state.show_excel_content = True
                         
                         # Excelファイルの内容を表示
@@ -206,8 +221,52 @@ def main():
                         
                     except Exception as e:
                         st.error(f"エラーが発生しました: {e}")
-    
+
     with tab2:
+        st.header("📤 日報アップロード")
+        st.markdown("既存の日報ファイルをアップロードして内容を確認できます。")
+        
+        uploaded_file = st.file_uploader(
+            "Excelファイルを選択してください",
+            type=['xlsx', 'xls'],
+            help="日報のExcelファイルをアップロードしてください"
+        )
+        
+        if uploaded_file is not None:
+            try:
+                # ファイル情報を表示
+                st.success(f"📄 ファイル '{uploaded_file.name}' がアップロードされました")
+                
+                # Excelファイルの内容を読み込み
+                df = pd.read_excel(uploaded_file, header=None)
+                
+                # 空の行と列を削除
+                df = df.dropna(how='all').dropna(axis=1, how='all')
+                
+                st.subheader("📊 アップロードされた日報の内容")
+                
+                # データフレームを表示
+                column_config = {}
+                for i in range(min(len(df.columns), 12)):  # 最大12列まで
+                    column_letter = chr(65 + i)  # A, B, C, ...
+                    width = "medium" if i in [1, 5, 6, 9, 10, 11] else "small"
+                    column_config[i] = st.column_config.TextColumn(column_letter, width=width)
+                
+                st.dataframe(
+                    df,
+                    use_container_width=True,
+                    hide_index=True,
+                    column_config=column_config
+                )
+                
+                # ファイル情報を表示
+                st.info(f"📄 ファイル名: {uploaded_file.name} | 📊 サイズ: {uploaded_file.size} bytes")
+                
+            except Exception as e:
+                st.error(f"ファイルの読み込み中にエラーが発生しました: {e}")
+                st.info("正しいExcelファイル形式かご確認ください。")
+    
+    with tab3:
         st.header("スタッフ管理")
         
         col1, col2 = st.columns(2)
