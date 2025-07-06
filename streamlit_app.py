@@ -164,51 +164,45 @@ def main():
                                 xl = pd.ExcelFile(excel_data)
                                 if not xl.sheet_names:
                                     st.error("Excelファイルにシートが含まれていません。")
-                                    return
-                                sheet_name = xl.sheet_names[0]
-                                
-                                # BytesIOの位置をリセットしてからデータを読み込み
-                                excel_data.seek(0)
-                                df = pd.read_excel(excel_data, sheet_name=sheet_name, header=None)
-                                
-                                # 空の行と列を削除
-                                df = df.dropna(how='all').dropna(axis=1, how='all')
-                                
-                                # 日報内容を表示（より見やすく）
-                                st.markdown("**📊 Excelファイルの内容:**")
-                                
-                                # データフレームを表示
-                                st.dataframe(
-                                    df,
-                                    use_container_width=True,
-                                    hide_index=True,
-                                    column_config={
-                                        "0": st.column_config.TextColumn("A", width="small"),
-                                        "1": st.column_config.TextColumn("B", width="medium"),
-                                        "2": st.column_config.TextColumn("C", width="small"),
-                                        "3": st.column_config.TextColumn("D", width="small"),
-                                        "4": st.column_config.TextColumn("E", width="small"),
-                                        "5": st.column_config.TextColumn("F", width="medium"),
-                                        "6": st.column_config.TextColumn("G", width="medium"),
-                                        "7": st.column_config.TextColumn("H", width="small"),
-                                        "8": st.column_config.TextColumn("I", width="small"),
-                                        "9": st.column_config.TextColumn("J", width="medium"),
-                                        "10": st.column_config.TextColumn("K", width="medium"),
-                                        "11": st.column_config.TextColumn("L", width="medium"),
-                                    }
-                                )
-                                
-                                # ファイル情報を表示
-                                st.info(f"📄 ファイル名: {filename} | 📅 シート名: {sheet_name}")
-                                
-                                # 非表示ボタン
-                                if st.button("📋 内容を非表示", type="secondary"):
-                                    st.session_state.show_excel_content = False
-                                    st.rerun()
+                                    st.info("生成されたファイルをご確認ください。")
+                                else:
+                                    sheet_name = xl.sheet_names[0]
+                                    
+                                    # BytesIOの位置をリセットしてからデータを読み込み
+                                    excel_data.seek(0)
+                                    df = pd.read_excel(excel_data, sheet_name=sheet_name, header=None)
+                                    
+                                    # 空の行と列を削除
+                                    df = df.dropna(how='all').dropna(axis=1, how='all')
+                                    
+                                    # 日報内容を表示（より見やすく）
+                                    st.markdown("**📊 Excelファイルの内容:**")
+                                    
+                                    # データフレームを表示（列設定を修正）
+                                    column_config = {}
+                                    for i in range(min(len(df.columns), 12)):  # 最大12列まで
+                                        column_letter = chr(65 + i)  # A, B, C, ...
+                                        width = "medium" if i in [1, 5, 6, 9, 10, 11] else "small"
+                                        column_config[i] = st.column_config.TextColumn(column_letter, width=width)
+                                    
+                                    st.dataframe(
+                                        df,
+                                        use_container_width=True,
+                                        hide_index=True,
+                                        column_config=column_config
+                                    )
+                                    
+                                    # ファイル情報を表示
+                                    st.info(f"📄 ファイル名: {filename} | 📅 シート名: {sheet_name}")
+                                    
+                                    # 非表示ボタン
+                                    if st.button("📋 内容を非表示", type="secondary"):
+                                        st.session_state.show_excel_content = False
+                                        st.rerun()
                                     
                             except Exception as e:
                                 st.error(f"Excelファイルの表示中にエラーが発生しました: {e}")
-                                st.info("ダウンロードしたファイルをご確認ください。")
+                                st.info("生成されたファイルをご確認ください。")
                         
                     except Exception as e:
                         st.error(f"エラーが発生しました: {e}")
