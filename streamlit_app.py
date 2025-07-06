@@ -125,7 +125,7 @@ def main():
                             output_bytes = writer.write_report(file_bytes, patrol_data)
                         
                         today = datetime.today()
-                        filename = f"日報_{today.strftime('%Y%m%d')}.xlsx"
+                        filename = f"岡山の天気.xlsx"
                         
                         st.success("日報が正常に作成されました！")
                         st.download_button(
