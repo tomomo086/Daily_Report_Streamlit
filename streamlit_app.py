@@ -1,8 +1,11 @@
 import streamlit as st
 from datetime import datetime
+import pandas as pd
+from io import BytesIO
 from models import PatrolData
 from config import Config
 from excel.writer import ExcelWriter
+from excel.cell_definitions import CellDefinitionManager
 
 def main():
     st.set_page_config(
@@ -17,7 +20,11 @@ def main():
     if 'config' not in st.session_state:
         st.session_state.config = Config()
     
+    if 'cell_manager' not in st.session_state:
+        st.session_state.cell_manager = CellDefinitionManager()
+    
     config = st.session_state.config
+    cell_manager = st.session_state.cell_manager
     
     tab1, tab2 = st.tabs(["📝 日報作成", "👥 スタッフ管理"])
     
@@ -74,30 +81,38 @@ def main():
             medium_theater = st.checkbox("中劇場（楽屋）使用", key="medium_theater")
             small_theater = st.checkbox("小劇場使用", key="small_theater")
             
-            st.subheader("Excelファイル")
-            uploaded_file = st.file_uploader(
-                "日報テンプレートファイルをアップロード",
-                type=['xlsx'],
-                help="日報のテンプレートExcelファイルを選択してください（最大10MB）"
-            )
+            st.subheader("セル位置情報")
             
-            # ファイル検証
-            if uploaded_file is not None:
-                # ファイルサイズチェック（10MB制限）
-                if uploaded_file.size > 10 * 1024 * 1024:
-                    st.error("ファイルサイズが大きすぎます。10MB以下のファイルを選択してください。")
-                    st.stop()  # 処理を停止
-                else:
-                    st.success(f"ファイル '{uploaded_file.name}' が正常にアップロードされました")
-                    st.info(f"ファイルサイズ: {uploaded_file.size / 1024:.1f} KB")
+            # 今日の日付を表示
+            today = datetime.today()
+            st.info(f"📅 日付: {today.strftime('%Y年%m月%d日')} （自動入力）")
+            
+            # セル位置表示
+            st.markdown("**📋 入力項目とセル位置:**")
+            user_cells = cell_manager.get_user_input_cells()
+            
+            with st.expander("セル位置詳細", expanded=False):
+                for cell in user_cells:
+                    st.markdown(f"- **{cell.label}** → セル `{cell.cell_address}`")
+                    if cell.description:
+                        st.text(f"  {cell.description}")
+            
+            # 自動生成項目の表示
+            st.markdown("**🤖 自動生成項目:**")
+            auto_cells = cell_manager.get_auto_generate_cells()
+            st.info(f"合計 {len(auto_cells)} 項目が自動生成されます")
+            
+            with st.expander("自動生成項目詳細", expanded=False):
+                for cell in auto_cells:
+                    st.markdown(f"- **{cell.label}** → セル `{cell.cell_address}`")
+                    if cell.description:
+                        st.text(f"  {cell.description}")
         
         st.markdown("---")
         
         if st.button("📋 日報作成", type="primary", use_container_width=True):
             if not all([post4, post5, post1, supervisor]):
                 st.error("すべての担当者を選択してください。")
-            elif not uploaded_file:
-                st.error("Excelファイルをアップロードしてください。")
             else:
                 # 担当者の重複チェック
                 staff_list = [post4, post5, post1, supervisor]
@@ -119,22 +134,75 @@ def main():
                         )
                         
                         writer = ExcelWriter()
-                        file_bytes = uploaded_file.read()
                         
                         with st.spinner("日報を作成中..."):
-                            output_bytes = writer.write_report(file_bytes, patrol_data)
+                            output_bytes = writer.write_report(patrol_data)
                         
                         today = datetime.today()
                         filename = f"日報_{today.strftime('%Y%m%d')}.xlsx"
                         
                         st.success("日報が正常に作成されました！")
-                        st.download_button(
-                            label="📥 日報をダウンロード",
-                            data=output_bytes,
-                            file_name=filename,
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                            type="primary"
-                        )
+                        
+                        # ExcelファイルをWEB上で表示
+                        st.subheader("📊 生成された日報")
+                        
+                        # 日報内容を表示ボタン
+                        if st.button("📋 日報内容を表示", type="primary", use_container_width=True):
+                            st.session_state.show_excel_content = True
+                        
+                        # Excelファイルの内容を表示
+                        if st.session_state.get('show_excel_content', False):
+                            st.markdown("---")
+                            st.subheader("📋 日報内容")
+                            
+                            # Excelファイルの内容を読み込んで表示
+                            try:
+                                # Excelファイルを読み込み
+                                excel_data = BytesIO(output_bytes)
+                                
+                                # シート名を取得
+                                xl = pd.ExcelFile(excel_data)
+                                if not xl.sheet_names:
+                                    st.error("Excelファイルにシートが含まれていません。")
+                                    st.info("生成されたファイルをご確認ください。")
+                                else:
+                                    sheet_name = xl.sheet_names[0]
+                                    
+                                    # BytesIOの位置をリセットしてからデータを読み込み
+                                    excel_data.seek(0)
+                                    df = pd.read_excel(excel_data, sheet_name=sheet_name, header=None)
+                                    
+                                    # 空の行と列を削除
+                                    df = df.dropna(how='all').dropna(axis=1, how='all')
+                                    
+                                    # 日報内容を表示（より見やすく）
+                                    st.markdown("**📊 Excelファイルの内容:**")
+                                    
+                                    # データフレームを表示（列設定を修正）
+                                    column_config = {}
+                                    for i in range(min(len(df.columns), 12)):  # 最大12列まで
+                                        column_letter = chr(65 + i)  # A, B, C, ...
+                                        width = "medium" if i in [1, 5, 6, 9, 10, 11] else "small"
+                                        column_config[i] = st.column_config.TextColumn(column_letter, width=width)
+                                    
+                                    st.dataframe(
+                                        df,
+                                        use_container_width=True,
+                                        hide_index=True,
+                                        column_config=column_config
+                                    )
+                                    
+                                    # ファイル情報を表示
+                                    st.info(f"📄 ファイル名: {filename} | 📅 シート名: {sheet_name}")
+                                    
+                                    # 非表示ボタン
+                                    if st.button("📋 内容を非表示", type="secondary"):
+                                        st.session_state.show_excel_content = False
+                                        st.rerun()
+                                    
+                            except Exception as e:
+                                st.error(f"Excelファイルの表示中にエラーが発生しました: {e}")
+                                st.info("生成されたファイルをご確認ください。")
                         
                     except Exception as e:
                         st.error(f"エラーが発生しました: {e}")
