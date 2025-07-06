@@ -138,6 +138,9 @@ def main():
                         with st.spinner("日報を作成中..."):
                             output_bytes = writer.write_report(patrol_data)
                         
+                        # output_bytesをセッションに保存
+                        st.session_state['output_bytes'] = output_bytes
+                        
                         today = datetime.today()
                         filename = f"日報_{today.strftime('%Y%m%d')}.xlsx"
                         
@@ -155,51 +158,39 @@ def main():
                             st.markdown("---")
                             st.subheader("📋 日報内容")
                             
-                            # Excelファイルの内容を読み込んで表示
                             try:
-                                # Excelファイルを読み込み
-                                excel_data = BytesIO(output_bytes)
-                                
-                                # シート名を取得
-                                xl = pd.ExcelFile(excel_data)
-                                if not xl.sheet_names:
-                                    st.error("Excelファイルにシートが含まれていません。")
-                                    st.info("生成されたファイルをご確認ください。")
+                                # セッションからExcelファイルを取得
+                                output_bytes = st.session_state.get('output_bytes', None)
+                                if output_bytes is None:
+                                    st.error("Excelファイルが見つかりません。先に日報を作成してください。")
                                 else:
-                                    sheet_name = xl.sheet_names[0]
-                                    
-                                    # BytesIOの位置をリセットしてからデータを読み込み
-                                    excel_data.seek(0)
-                                    df = pd.read_excel(excel_data, sheet_name=sheet_name, header=None)
-                                    
-                                    # 空の行と列を削除
-                                    df = df.dropna(how='all').dropna(axis=1, how='all')
-                                    
-                                    # 日報内容を表示（より見やすく）
-                                    st.markdown("**📊 Excelファイルの内容:**")
-                                    
-                                    # データフレームを表示（列設定を修正）
-                                    column_config = {}
-                                    for i in range(min(len(df.columns), 12)):  # 最大12列まで
-                                        column_letter = chr(65 + i)  # A, B, C, ...
-                                        width = "medium" if i in [1, 5, 6, 9, 10, 11] else "small"
-                                        column_config[i] = st.column_config.TextColumn(column_letter, width=width)
-                                    
-                                    st.dataframe(
-                                        df,
-                                        use_container_width=True,
-                                        hide_index=True,
-                                        column_config=column_config
-                                    )
-                                    
-                                    # ファイル情報を表示
-                                    st.info(f"📄 ファイル名: {filename} | 📅 シート名: {sheet_name}")
-                                    
-                                    # 非表示ボタン
-                                    if st.button("📋 内容を非表示", type="secondary"):
-                                        st.session_state.show_excel_content = False
-                                        st.rerun()
-                                    
+                                    excel_data = BytesIO(output_bytes)
+                                    # シート名を取得
+                                    xl = pd.ExcelFile(excel_data)
+                                    if not xl.sheet_names:
+                                        st.error("Excelファイルにシートが含まれていません。")
+                                        st.info("生成されたファイルをご確認ください。")
+                                    else:
+                                        sheet_name = xl.sheet_names[0]
+                                        excel_data.seek(0)
+                                        df = pd.read_excel(excel_data, sheet_name=sheet_name, header=None)
+                                        df = df.dropna(how='all').dropna(axis=1, how='all')
+                                        st.markdown("**📊 Excelファイルの内容:**")
+                                        column_config = {}
+                                        for i in range(min(len(df.columns), 12)):
+                                            column_letter = chr(65 + i)
+                                            width = "medium" if i in [1, 5, 6, 9, 10, 11] else "small"
+                                            column_config[i] = st.column_config.TextColumn(column_letter, width=width)
+                                        st.dataframe(
+                                            df,
+                                            use_container_width=True,
+                                            hide_index=True,
+                                            column_config=column_config
+                                        )
+                                        st.info(f"📄 ファイル名: {filename} | 📅 シート名: {sheet_name}")
+                                        if st.button("📋 内容を非表示", type="secondary"):
+                                            st.session_state.show_excel_content = False
+                                            st.rerun()
                             except Exception as e:
                                 st.error(f"Excelファイルの表示中にエラーが発生しました: {e}")
                                 st.info("生成されたファイルをご確認ください。")
