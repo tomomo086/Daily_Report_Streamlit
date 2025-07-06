@@ -1,5 +1,7 @@
 import streamlit as st
 from datetime import datetime
+import pandas as pd
+from io import BytesIO
 from models import PatrolData
 from config import Config
 from excel.writer import ExcelWriter
@@ -154,18 +156,19 @@ def main():
                             st.subheader("📋 日報内容")
                             
                             # Excelファイルの内容を読み込んで表示
-                            import pandas as pd
-                            from io import BytesIO
-                            
                             try:
                                 # Excelファイルを読み込み
                                 excel_data = BytesIO(output_bytes)
                                 
                                 # シート名を取得
                                 xl = pd.ExcelFile(excel_data)
+                                if not xl.sheet_names:
+                                    st.error("Excelファイルにシートが含まれていません。")
+                                    return
                                 sheet_name = xl.sheet_names[0]
                                 
-                                # データを読み込み
+                                # BytesIOの位置をリセットしてからデータを読み込み
+                                excel_data.seek(0)
                                 df = pd.read_excel(excel_data, sheet_name=sheet_name, header=None)
                                 
                                 # 空の行と列を削除
