@@ -2,8 +2,16 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Border, Side, PatternFill, Alignment
 from datetime import datetime
 import io
-from models import PatrolData
-from utils.time_utils import PatrolTimeGenerator
+try:
+    from models import PatrolData
+except ImportError:
+    PatrolData = None  # モデルが見つからない場合の暫定対応
+
+try:
+    from utils.time_utils import PatrolTimeGenerator
+except ImportError:
+    PatrolTimeGenerator = None  # ユーティリティが見つからない場合の暫定対応
+
 from .cell_definitions import CellDefinitionManager
 
 class ExcelWriter:
