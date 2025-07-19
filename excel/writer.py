@@ -2,9 +2,16 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Border, Side, PatternFill, Alignment
 from datetime import datetime
 import io
-import streamlit as st
-from models import PatrolData
-from utils.time_utils import PatrolTimeGenerator
+try:
+    from models import PatrolData
+except ImportError:
+    PatrolData = None  # モデルが見つからない場合の暫定対応
+
+try:
+    from utils.time_utils import PatrolTimeGenerator
+except ImportError:
+    PatrolTimeGenerator = None  # ユーティリティが見つからない場合の暫定対応
+
 from .cell_definitions import CellDefinitionManager
 
 class ExcelWriter:
@@ -113,12 +120,11 @@ class ExcelWriter:
                     return
             cell.value = value
         except Exception as e:
-            st.warning(f"セル {cell_address} への値設定でエラー: {e}")
             # エラーが発生しても処理を継続
             try:
                 ws[cell_address] = value
             except Exception as fallback_error:
-                st.error(f"フォールバック処理でもエラー: {fallback_error}")
+                pass
     
     def _set_time(self, ws, cell, time_str):
         """時間をセルに設定（0埋め除去対応）"""
@@ -238,9 +244,8 @@ class ExcelWriter:
         self._set_time(ws, 'H38', other_times['night_4post'])
         self._safe_set_cell_value(ws, 'J38', patrol_data.post4_lastname)
         
-        self._set_time(ws, 'E41', other_times['patrol_4post'])
+        self._set_time(ws, 'E41', "22:50")
         self._safe_set_cell_value(ws, 'G41', patrol_data.post4_lastname)
-        self._safe_set_cell_value(ws, 'F41', "22:50")
         
         self._set_time(ws, 'H41', other_times['patrol_4post_end'])
         self._safe_set_cell_value(ws, 'J41', patrol_data.post4_lastname)
@@ -252,5 +257,5 @@ class ExcelWriter:
                 try:
                     ws_item[cell].font = Font(size=8)
                 except Exception as font_error:
-                    st.write(f"フォント設定エラー (セル {cell}): {font_error}")
+                    pass
 
