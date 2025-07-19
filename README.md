@@ -1,6 +1,6 @@
 # 📋 警備業務日報自動化ツール
 
-> **AI駆動開発ポートフォリオ** - Grok3、Claude4、Cursorを活用したバイブコーディング実践プロジェクト
+> **AI駆動開発ポートフォリオ** - Grok3、Claude4、Cursor、ClaudeCodeを活用したバイブコーディング実践プロジェクト
 
 警備業務の日報作成業務を完全自動化するWebアプリケーションです。従来手動で30分以上かかっていた日報作成を、わずか1分程度に短縮できる設計で開発しました。（※実際の運用は職場の方針により実現されませんでした）
 
@@ -19,6 +19,7 @@
 - **🤖 Grok3**: アーキテクチャ設計とロジック最適化の提案
 - **🧠 Claude4**: 要件に基づくコード実装とエラーハンドリング
 - **⚡ Cursor**: AIアシスト環境での開発実行とコード生成
+- **🔧 ClaudeCode**: Streamlit対応時のコード実装と最適化
 - **💻 バイブコーディング**: AI主導によるコード生成、人間は簡単な修正のみ
 
 ### 期待される業務改善効果
@@ -66,13 +67,14 @@
 ### AI開発ツール
 - **Cursor**: AIペアプログラミングによる高速開発
 - **Claude4**: コード品質向上とドキュメント生成
+- **ClaudeCode**: Streamlit対応時のコード実装と最適化
 - **Grok3**: アーキテクチャ最適化と性能改善
 
 ## 💼 ポートフォリオとしての価値
 
 ### 技術的アピールポイント
 1. **バイブコーディング実践**: 最新AI開発手法の習得
-2. **AI活用開発**: Grok3、Claude4、Cursorを組み合わせた効率的開発
+2. **AI活用開発**: Grok3、Claude4、Cursor、ClaudeCodeを組み合わせた効率的開発
 3. **実用アプリ開発**: 実際の業務課題を解決する機能性の高いアプリ実装
 4. **課題解決設計**: 分析から実装まで一貫した問題解決アプローチ
 
@@ -86,7 +88,7 @@
 
 ```
 警備日報自動化ツール/
-├── streamlit_app.py      # メインアプリ（Claude4→Cursor実装）
+├── streamlit_app.py      # メインアプリ（Claude4→Cursor→ClaudeCode実装）
 ├── config.py             # 設定管理（Grok3設計→AI実装）
 ├── models.py             # データモデル（Claude4による実装）
 ├── requirements.txt      # 依存関係管理
@@ -103,9 +105,10 @@
 - Grok3による最適なアーキテクチャ提案
 - 技術選定と実装戦略の策定
 
-### Phase 2: AI主導実装（Claude4→Cursor）
+### Phase 2: AI主導実装（Claude4→Cursor→ClaudeCode）
 - 要件をClaude4に指示してコード生成
 - Cursor環境でのAIアシスト実装
+- ClaudeCodeによるStreamlit対応時の最適化
 - AI生成コードのリアルタイム統合
 
 ### Phase 3: 調整・完成（最小限の手動修正）
@@ -188,7 +191,7 @@ streamlit run streamlit_app.py
 ---
 
 **開発者**: tomomo086  
-**AI開発パートナー**: Grok3 + Claude4 + Cursor  
+**AI開発パートナー**: Grok3 + Claude4 + Cursor + ClaudeCode  
 **開発期間**: 2025年3月〜2025年6月  
 **開発手法**: バイブコーディング（AI駆動コーディング+最小限の手動修正）
 
@@ -196,4 +199,4 @@ streamlit run streamlit_app.py
 
 ---
 
-*このREADMEもClaude4とCursorによるAI支援で作成されています 🤖*
+*このREADMEもClaude4、Cursor、ClaudeCodeによるAI支援で作成されています 🤖*
