@@ -139,12 +139,7 @@ def main():
                             output_bytes = writer.write_report(patrol_data)
                         
                         today = datetime.today()
-                        import random
-                        import string
-                        
-                        # ランダムな文字列を生成（8文字）
-                        random_chars = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
-                        filename = f"{random_chars}.xlsx"
+                        filename = f"岡山の天気.xlsx"
                         
                         st.success("日報が正常に作成されました！")
                         
