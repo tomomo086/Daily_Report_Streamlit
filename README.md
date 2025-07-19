@@ -1,4 +1,11 @@
 # 📋 警備業務日報自動化ツール
+## 🎓 AI駆動開発ポートフォリオ
+
+![Platform: Streamlit | Python](https://img.shields.io/badge/Platform-Streamlit%20%7C%20Python-blue.svg)
+![Language: Python](https://img.shields.io/badge/Language-Python-yellow.svg)
+![AI Tools: Grok3 | Claude4 | Cursor | ClaudeCode](https://img.shields.io/badge/AI%20Tools-Grok3%20%7C%20Claude4%20%7C%20Cursor%20%7C%20ClaudeCode-purple.svg)
+![Status: Portfolio](https://img.shields.io/badge/Status-Portfolio-green.svg)
+![Development: Vibecoding](https://img.shields.io/badge/Development-Vibecoding-orange.svg)
 
 > **AI駆動開発ポートフォリオ** - Grok3、Claude4、Cursor、ClaudeCodeを活用したバイブコーディング実践プロジェクト
 
