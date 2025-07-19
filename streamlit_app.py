@@ -257,6 +257,20 @@ def main():
                 # ファイル情報を表示
                 st.info(f"📄 ファイル名: {uploaded_file.name} | 📊 サイズ: {uploaded_file.size} bytes")
                 
+                # ダウンロードボタンを追加
+                st.markdown("---")
+                st.subheader("📥 ファイルダウンロード")
+                
+                # アップロードされたファイルをダウンロード可能にする
+                st.download_button(
+                    label="📥 アップロードされたファイルをダウンロード",
+                    data=uploaded_file.getvalue(),
+                    file_name=uploaded_file.name,
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    type="primary",
+                    use_container_width=True
+                )
+                
             except Exception as e:
                 st.error(f"ファイルの読み込み中にエラーが発生しました: {e}")
                 st.info("正しいExcelファイル形式かご確認ください。")
