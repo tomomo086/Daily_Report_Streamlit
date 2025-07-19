@@ -182,4 +182,8 @@
 
 ---
 
+**開発者**: tomomo086 ＋ Claude Sonnet4
+**バージョン**: 1.0.0  
+**最終更新**: 2025年7月19日
+=======
 *このREADMEもClaude4、Cursor、ClaudeCodeによるAI支援で作成されています 🤖*
