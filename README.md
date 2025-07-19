@@ -135,23 +135,6 @@
 - **組織変化**: 技術的解決と組織的受容のギャップを学習
 - **コミュニケーション**: 技術の価値を非技術者に伝える重要性
 
-## 🚀 ローカル実行方法
-
-```bash
-# リポジトリクローン
-git clone https://github.com/tomomo086/security-report-automation.git
-cd security-report-automation
-
-# 仮想環境セットアップ
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# 依存関係インストール
-pip install -r requirements.txt
-
-# アプリケーション起動
-streamlit run streamlit_app.py
-```
 
 ## 🎯 技術的なポイント・工夫
 
