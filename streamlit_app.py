@@ -139,7 +139,7 @@ def main():
                             output_bytes = writer.write_report(patrol_data)
                         
                         today = datetime.today()
-                        filename = f"岡山の天気.xlsx"
+                        filename = f"日報_{today.strftime('%Y%m%d')}.xlsx"
                         
                         st.success("日報が正常に作成されました！")
                         
@@ -257,19 +257,127 @@ def main():
                 # ファイル情報を表示
                 st.info(f"📄 ファイル名: {uploaded_file.name} | 📊 サイズ: {uploaded_file.size} bytes")
                 
-                # ダウンロードボタンを追加
+                # 入力フォームを追加
+                st.markdown("---")
+                st.subheader("📝 日報内容編集")
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.subheader("担当者選択")
+                    
+                    post4_options = [""] + config.security_staff_list
+                    post4_edit = st.selectbox("4ポスト担当", post4_options, key="post4_edit")
+                    
+                    post5_options = [""] + config.security_staff_list
+                    post5_edit = st.selectbox("5ポスト担当", post5_options, key="post5_edit")
+                    
+                    post1_options = [""] + config.security_staff_list
+                    post1_edit = st.selectbox("1ポスト担当", post1_options, key="post1_edit")
+                    
+                    supervisor_options = [""] + config.facility_staff_list
+                    supervisor_edit = st.selectbox("設備担当者", supervisor_options, key="supervisor_edit")
+
+                    # 天気入力欄
+                    st.subheader("天気")
+                    weather_options = ["晴", "曇", "雨", "晴/曇", "曇/雨", "その他"]
+                    weather_select_edit = st.selectbox("天気を選択", weather_options, key="weather_select_edit")
+                    weather_edit = ""
+                    if weather_select_edit == "その他":
+                        weather_edit = st.text_input("天気を自由入力（上の選択肢以外の場合）", key="weather_input_edit")
+                    else:
+                        weather_edit = weather_select_edit
+                    # 空の場合はデフォルト値
+                    if not weather_edit:
+                        weather_edit = "未記入"
+
+                    st.subheader("巡回設定")
+                    patrol_start_edit = st.selectbox(
+                        "巡回開始時刻", 
+                        ["21:00頃", "22:00頃"], 
+                        key="patrol_start_edit"
+                    )
+
+                    st.subheader("勤務区分")
+                    work_type_edit = st.selectbox(
+                        "勤務区分を選択",
+                        ["通常", "早出", "残業"],
+                        key="work_type_edit"
+                    )
+                
+                with col2:
+                    st.subheader("劇場使用状況")
+                    large_theater_edit = st.checkbox("大劇場使用", key="large_theater_edit")
+                    medium_theater_edit = st.checkbox("中劇場（楽屋）使用", key="medium_theater_edit")
+                    small_theater_edit = st.checkbox("小劇場使用", key="small_theater_edit")
+                    
+                    st.subheader("ファイル情報")
+                    today = datetime.today()
+                    st.info(f"📅 日付: {today.strftime('%Y年%m月%d日')} （自動入力）")
+                
+                # 編集した内容でファイルを更新するボタン
+                if st.button("📝 内容を更新してダウンロード", type="primary", use_container_width=True):
+                    if not all([post4_edit, post5_edit, post1_edit, supervisor_edit]):
+                        st.error("すべての担当者を選択してください。")
+                    else:
+                        # 担当者の重複チェック
+                        staff_list = [post4_edit, post5_edit, post1_edit, supervisor_edit]
+                        if len(set(staff_list)) != len(staff_list):
+                            st.error("同じ担当者が複数のポストに割り当てられています。担当者を変更してください。")
+                        else:
+                            try:
+                                patrol_data = PatrolData(
+                                    post4=post4_edit,
+                                    post5=post5_edit,
+                                    post1=post1_edit,
+                                    supervisor=supervisor_edit,
+                                    patrol_start=patrol_start_edit,
+                                    large_theater_used=large_theater_edit,
+                                    medium_theater_used=medium_theater_edit,
+                                    small_theater_used=small_theater_edit,
+                                    weather=weather_edit,
+                                    work_type=work_type_edit
+                                )
+                                
+                                writer = ExcelWriter()
+                                
+                                with st.spinner("ファイルを更新中..."):
+                                    output_bytes = writer.write_report(patrol_data)
+                                
+                                today = datetime.today()
+                                filename = f"日報_{today.strftime('%Y%m%d')}.xlsx"
+                                
+                                st.success("ファイルが正常に更新されました！")
+                                
+                                # 更新されたファイルをダウンロード
+                                st.download_button(
+                                    label="📥 更新された日報をダウンロード",
+                                    data=output_bytes,
+                                    file_name=filename,
+                                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                    type="primary",
+                                    use_container_width=True
+                                )
+                                
+                            except Exception as e:
+                                st.error(f"エラーが発生しました: {e}")
+                
+                # 元のファイルをダウンロードするボタン
                 st.markdown("---")
                 st.subheader("📥 ファイルダウンロード")
                 
-                # アップロードされたファイルをダウンロード可能にする
-                st.download_button(
-                    label="📥 アップロードされたファイルをダウンロード",
-                    data=uploaded_file.getvalue(),
-                    file_name=uploaded_file.name,
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    type="primary",
-                    use_container_width=True
-                )
+                col_download1, col_download2 = st.columns(2)
+                
+                with col_download1:
+                    # アップロードされたファイルをそのままダウンロード
+                    st.download_button(
+                        label="📥 元のファイルをダウンロード",
+                        data=uploaded_file.getvalue(),
+                        file_name=uploaded_file.name,
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        type="secondary",
+                        use_container_width=True
+                    )
                 
             except Exception as e:
                 st.error(f"ファイルの読み込み中にエラーが発生しました: {e}")
